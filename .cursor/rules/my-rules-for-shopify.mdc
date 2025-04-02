@@ -1,0 +1,118 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+
+Technology Stack
+
+• Backend: Use Node.js with Express for server-side logic, integrating the Shopify API library for OAuth and API interactions, as recommended by Shopify for secure store access.
+
+• Frontend: Use React with Vite App Router, leveraging Shopify App Bridge for embedding the app in the Shopify admin, ensuring seamless integration.
+
+• UI Components: Use Shopify Polaris for React components instead of DaisyUI, ensuring the app matches the Shopify admin's design system for consistency and usability.
+
+• Styling: Use Tailwind CSS for additional custom styling where Polaris is insufficient, maintaining flexibility without conflicting with Shopify's design. To avoid conflicts, apply Tailwind for layout (e.g., padding, grids) and Polaris for components, ensuring no style overrides. 
+
+
+
+• Database: Use SUPABASE to store share verification data, discount codes, and analytics, aligning with your preferred stack and supporting optional persistence.
+
+
+APIs:
+
+• Shopify Admin API: Fetch products, create discount codes, and track sales, as per Shopify Admin API Docs.
+
+• Instagram Graph API: Verify customer shares via mentions, requiring a Facebook Developer account, as per Instagram Graph API Docs.
+
+Code Style and Structure
+
+• Write concise, technical JavaScript code with accurate examples, e.g., const fetchProducts = async () => await shopify.api.rest.Product.all({ session });.
+
+• Use functional and declarative programming patterns; avoid classes, e.g., prefer const ProductList = ({ products }) => <div>{products.map(product => <p>{product.title}</p>)}</div> over class-based components.
+
+• Prefer iteration and modularization over code duplication, e.g., create a fetchApiData helper to reuse across Shopify and Instagram API calls.
+
+• Use descriptive variable names with auxiliary verbs, e.g., isLoading, hasVerifiedShare, isDiscountApplied.
+
+Structure files logically:
+
+• Exported component (e.g., DashboardMain.jsx).
+
+• Subcomponents (e.g., CardAnalytics.jsx).
+
+• Helpers (e.g., api-utils.js for API calls).
+
+• Static content (e.g., constants.js for API keys or config).
+
+Naming Conventions
+
+• Directories: Use kebab-case, e.g., components, lib, pages.
+
+• Variables and Functions: Use camelCase, e.g., getShareStatus, isAuthenticated.
+
+• Components: Use PascalCase with type prefixes, e.g., ButtonSubmit.jsx, CardAnalyticsMain.jsx.
+
+• File Names: PascalCase for components (e.g., ProductList.jsx), kebab-case for others (e.g., shopify-utils.js).
+
+Syntax and Formatting :
+
+• Use the function keyword for pure functions, e.g., function calculateDiscount(amount) { return amount * 0.1; }.
+
+• Avoid unnecessary curly braces in conditionals for simple statements, e.g., if (isLoading) return <p>Loading...</p>; instead of if (isLoading) { return <p>Loading...</p>; }.
+
+• Use declarative JSX, e.g., <ul>{products.map(product => <li key={product.id}>{product.title}</li>)}</ul>.
+
+UI and Styling :
+
+• Use Shopify Polaris for all UI components (e.g., buttons, cards, forms) to ensure the app integrates seamlessly into the Shopify admin, replacing DaisyUI for compliance with Shopify App Surfaces.
+
+
+Performance Optimization :
+
+• Minimize 'use client', 'useState', and 'useEffect'; favor React Server Components (RSC) for Shopify API calls and static rendering, e.g., fetch products server-side in app/dashboard/page.jsx.
+
+• Wrap client components in Suspense with fallback, e.g., <Suspense fallback={<p>Loading...</p>}><ClientComponent /></Suspense>.
+
+• Use dynamic loading for non-critical components, e.g., const LazyAnalytics = dynamic(() => import('../components/Analytics'), { ssr: false });.
+
+• Optimize images: Use WebP format, include size data (e.g., width={300} height={200}), and implement lazy loading with loading="lazy" for any merchant-uploaded images.
+
+
+
+Design :
+• Create beautiful, production-worthy designs using Shopify Polaris for a polished, Shopify-native look, avoiding cookie-cutter layouts, e.g., a dashboard with a clean grid of cards for analytics and settings.
+
+Ensure fully featured webpages, e.g., a merchant dashboard with:
+A form to set discount percentages and select products.
+
+A table or card layout for analytics (shares, discounts, sales).
+
+Do not install additional UI themes, icons, or packages (e.g., Font Awesome) unless explicitly requested; rely on Polaris.
+
+Shopify-Specific Rules for "ShareSpike"
+Embedding in Shopify Admin: Use Shopify App Bridge to embed the app in the admin, ensuring navigation and authentication align with App Surfaces.
+
+Shopify API Integration:
+
+• Use the Shopify API library to handle OAuth authentication, e.g., shopify.auth.begin() and shopify.auth.callback().
+
+• Fetch products with shopify.api.rest.Product.all({ session }).
+
+• Create discount codes with shopify.api.rest.PriceRule.create({ session, title: 'SHAREFAST10', value: '-10.0' }).
+
+Instagram API Integration:
+
+• Use the Instagram Graph API to fetch mentions with /me/mentions, requiring a Facebook app setup and access token.
+
+• Verify shares by checking post content for store mentions and product links, e.g., if (mention.caption.includes(shopHandle)).
+
+• Security: Store API keys and tokens in environment variables (e.g., .env.local), never hardcode them, and use HTTPS for all requests.
+
+• Rate Limits: Handle Shopify and Instagram API rate limits with retry logic, e.g., if (response.status === 429) setTimeout(retry, 1000);.
+

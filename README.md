@@ -1,65 +1,102 @@
-# ShareSpike - Viral Sales Through Social Sharing
+# ShareSpike 🚀
 
-ShareSpike is a powerful Shopify app that automates the process of rewarding customers for sharing products on Instagram, helping merchants drive viral sales and increase brand visibility.
+> Drive viral sales through Instagram sharing with automatic discounts
 
-## Overview
+ShareSpike is a powerful Shopify app that automatically rewards customers with discounts when they share products on Instagram, creating a viral marketing loop for your store.
 
-ShareSpike transforms your customers into brand advocates by automatically applying discounts when they share your products on Instagram. This creates a powerful viral marketing loop that can significantly boost your store's visibility and sales.
+## Features
 
-### Key Features
+### For Merchants 🏪
 
-- **Automatic Discount Application**: Instant discount codes generated and applied when customers share products
-- **Instagram Share Verification**: Secure verification of customer shares using Instagram Graph API
-- **Smart Discount Management**: 
-  - Customizable discount percentages
-  - Product-specific sharing rewards
-  - Unique discount code generation
-- **Merchant Dashboard**:
-  - Real-time analytics tracking
-  - Share performance metrics
-  - Sales attribution
-  - Discount management controls
+- **Easy Setup**: Quick installation and simple configuration in your Shopify admin
+- **Flexible Discount Management**: 
+  - Set custom discount percentages
+  - Choose eligible products
+  - Control sharing requirements
+- **Comprehensive Analytics**:
+  - Track shares, discounts, and sales
+  - Monitor viral growth metrics
+  - Measure ROI in real-time
+- **Shopify Admin Integration**:
+  - Native Shopify admin experience
+  - Built with Shopify Polaris components
+  - Seamless workflow integration
 
-## Technology Stack
+### For Customers 🛍️
 
-- **Frontend**: React with Next.js App Router
-- **UI Components**: Shopify Polaris
-- **Backend**: Node.js with Express
-- **Database**: MongoDB with Mongoose
-- **APIs**: 
-  - Shopify Admin API
-  - Instagram Graph API
+- **Instant Rewards**: Automatic discounts for sharing products
+- **Simple Sharing Process**: 
+  1. Share product on Instagram
+  2. Get verified automatically
+  3. Receive discount code instantly
+- **Transparent Requirements**: Clear instructions on how to qualify for discounts
+
+## Technical Stack
+
+- **Frontend**: 
+  - React with Next.js App Router
+  - Shopify Polaris components
+  - Tailwind CSS for custom styling
+  
+- **Backend**:
+  - Node.js with Express
+  - Shopify API integration
+  - Instagram Graph API integration
+  
+- **Database**:
+  - Supabase for data persistence
+  - Real-time analytics support
+
+## Security & Performance
+
+- Secure OAuth implementation
+- Rate limiting protection
+- Efficient API usage
+- GDPR compliant data handling
 
 ## Getting Started
 
-1. Clone the repository
+### Prerequisites
+
+- Shopify Partner account
+- Development store
+- Instagram Business account
+- Node.js 16+
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/ShareSpike.git
+   ```
+
 2. Install dependencies:
    ```bash
    npm install
    ```
+
 3. Set up environment variables:
    ```bash
    cp .env.example .env
    ```
-4. Start the development server:
+
+4. Start development server:
    ```bash
    npm run dev
    ```
 
-## Development
-
-This project follows strict development guidelines to ensure code quality and maintainability:
-
-- Functional programming patterns
-- Server-side rendering with Next.js
-- Mobile-first responsive design
-- Comprehensive error handling
-- Type-safe development
-
 ## Contributing
 
-Contributions are welcome! Please read our contributing guidelines before submitting pull requests.
+We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+For support, please email [support@sharespike.com](mailto:support@sharespike.com) or open an issue in the GitHub repository.
+
+---
+
+Built with ❤️ for Shopify merchants

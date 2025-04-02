@@ -1,67 +1,34 @@
 # ShareSpike - Viral Sales Through Social Sharing
 
-ShareSpike is a Shopify app that automatically applies discounts when customers share products on Instagram, driving viral sales and social engagement for Shopify stores.
+ShareSpike is a powerful Shopify app that automates the process of rewarding customers for sharing products on Instagram, helping merchants drive viral sales and increase brand visibility.
 
 ## Overview
 
-ShareSpike incentivizes social sharing by offering automatic discounts when customers share products on Instagram. This creates a viral loop where:
-1. Customers share products to get discounts
-2. Their followers see the shared products
-3. More customers share to get discounts
-4. Sales increase through viral growth
+ShareSpike transforms your customers into brand advocates by automatically applying discounts when they share your products on Instagram. This creates a powerful viral marketing loop that can significantly boost your store's visibility and sales.
 
-## Features
+### Key Features
 
-### Core Features
-- [x] Product Management
-  - [x] View all store products
-  - [x] Product details display
-  - [x] Product status tracking
+- **Automatic Discount Application**: Instant discount codes generated and applied when customers share products
+- **Instagram Share Verification**: Secure verification of customer shares using Instagram Graph API
+- **Smart Discount Management**: 
+  - Customizable discount percentages
+  - Product-specific sharing rewards
+  - Unique discount code generation
+- **Merchant Dashboard**:
+  - Real-time analytics tracking
+  - Share performance metrics
+  - Sales attribution
+  - Discount management controls
 
-- [ ] Discount System
-  - [ ] Automatic discount generation
-  - [ ] Customizable discount percentages
-  - [ ] Unique discount code creation
-  - [ ] Discount code delivery system
-
-- [ ] Instagram Integration
-  - [ ] Instagram share verification
-  - [ ] Product link validation
-  - [ ] Store mention detection
-  - [ ] Instagram Graph API integration
-
-- [ ] Analytics Dashboard
-  - [ ] Share tracking
-  - [ ] Discount usage statistics
-  - [ ] Sales impact analysis
-  - [ ] Viral coefficient calculation
-
-### Merchant Dashboard
-- [x] Shopify Admin Integration
-  - [x] Embedded app interface
-  - [x] Polaris UI components
-  - [x] Responsive design
-
-- [ ] Settings Management
-  - [ ] Discount configuration
-  - [ ] Product selection
-  - [ ] Instagram account connection
-  - [ ] Email notification settings
-
-## Technical Stack
+## Technology Stack
 
 - **Frontend**: React with Next.js App Router
 - **UI Components**: Shopify Polaris
-- **Styling**: Tailwind CSS
 - **Backend**: Node.js with Express
-- **Database**: Supabase
+- **Database**: MongoDB with Mongoose
 - **APIs**: 
   - Shopify Admin API
   - Instagram Graph API
-
-## Development Status
-
-Currently in active development. The basic product management interface is implemented, with core features being added incrementally.
 
 ## Getting Started
 
@@ -79,25 +46,19 @@ Currently in active development. The basic product management interface is imple
    npm run dev
    ```
 
-## Environment Variables
+## Development
 
-Required environment variables:
-- `SHOPIFY_API_KEY`
-- `SHOPIFY_API_SECRET`
-- `SCOPES`
-- `HOST`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `INSTAGRAM_APP_ID`
-- `INSTAGRAM_APP_SECRET`
+This project follows strict development guidelines to ensure code quality and maintainability:
+
+- Functional programming patterns
+- Server-side rendering with Next.js
+- Mobile-first responsive design
+- Comprehensive error handling
+- Type-safe development
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
+Contributions are welcome! Please read our contributing guidelines before submitting pull requests.
 
 ## License
 

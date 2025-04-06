@@ -30,9 +30,10 @@ This file tracks active development tasks, backlog items, and milestones for "Sh
   - Create settings page with discount configuration
   - Implement Supabase integration for storing preferences
   - Add to Shopify admin navigation
-- [ ] **Integrate Shopify Admin API**
+- [x] **Integrate Shopify Admin API**
   - Fetch products and allow merchants to select eligible ones.
   - Create discount codes for verified shares.
+  - Build discount testing page for manual code generation.
 - [ ] **Implement Instagram Share Verification**
   - Configure Instagram Graph API to fetch mentions.
   - Verify shares by checking for store mentions or product links.
@@ -55,12 +56,12 @@ This file tracks active development tasks, backlog items, and milestones for "Sh
   - Submit the app for review.
 
 ## Milestones
-1. **Milestone 1: Basic Setup** *(In Progress)*
+1. **Milestone 1: Basic Setup** *(Completed)*
    - Complete: Development environment, project initialization, GitHub repository, products page display, Supabase setup, Settings page.
    - Pending: Shopify authentication.
-2. **Milestone 2: Core Integrations**
-   - Complete: 
-   - Pending: Merchant dashboard, Shopify API integration, Instagram share verification.
+2. **Milestone 2: Core Integrations** *(In Progress)*
+   - Complete: Shopify Admin API integration, discount code generation
+   - Pending: Instagram share verification.
 3. **Milestone 3: Full Features**
    - Complete: 
    - Pending: Analytics, customer share submission.

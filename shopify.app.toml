@@ -3,7 +3,7 @@
 client_id = "d3974da956e097f931aa11d357cadfba"
 name = "ShareSpike"
 handle = "sharespike"
-application_url = "https://stay-activities-kai-pros.trycloudflare.com"
+application_url = "https://sharespike.fly.dev/"
 embedded = true
 
 [build]
@@ -27,9 +27,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://stay-activities-kai-pros.trycloudflare.com/auth/callback",
-  "https://stay-activities-kai-pros.trycloudflare.com/auth/shopify/callback",
-  "https://stay-activities-kai-pros.trycloudflare.com/api/auth/callback"
+  "https://sharespike.fly.dev/auth/callback",
+  "https://sharespike.fly.dev/shopify/callback",
+  "https://sharespike.fly.dev/api/auth/callback"
 ]
 
 [pos]

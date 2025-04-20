@@ -3,7 +3,7 @@
 client_id = "d3974da956e097f931aa11d357cadfba"
 name = "ShareSpike"
 handle = "sharespike"
-application_url = "https://sharespike.fly.dev/"
+application_url = "https://coat-renew-excellent-identify.trycloudflare.com"
 embedded = true
 
 [build]
@@ -27,9 +27,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://sharespike.fly.dev/auth/callback",
-  "https://sharespike.fly.dev/shopify/callback",
-  "https://sharespike.fly.dev/api/auth/callback"
+  "https://coat-renew-excellent-identify.trycloudflare.com/auth/callback",
+  "https://coat-renew-excellent-identify.trycloudflare.com/auth/shopify/callback",
+  "https://coat-renew-excellent-identify.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

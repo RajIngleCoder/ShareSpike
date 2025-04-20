@@ -35,6 +35,13 @@ This file tracks active development tasks, backlog items, and milestones for "Sh
   - Create discount codes for verified shares.
   - Build discount testing page for manual code generation.
 - [ ] **Implement Instagram Share Verification**
+  - [x] Configure existing Instagram Connect button in Settings page to use `window.open` with correct OAuth URL to bypass iframe restrictions - *4/16/2025*
+  - [x] Fix Instagram callback handler (`storeInstagramCredentials`) to save credentials to correct database column (`instagram_user_id`) - *4/17/2025*
+  - [x] Add production Instagram callback URL to `shopify.app.toml` `auth.redirect_urls` - *4/18/2025*
+  - [x] Implement session re-authentication in Instagram callback route using `state` parameter to handle lost sessions - *4/18/2025*
+  - [x] Simplify Instagram callback route to directly exchange code and store credentials, relying on settings page for Shopify auth - *4/19/2025*
+  - [x] Correct redirect URI in `CardInstagramConnection.jsx` to `https://sharespike.fly.dev/api/auth/instagram/callback` - *4/19/2025*
+  - [x] Remove unused `app/routes/api.instagram.callback.jsx` file - *4/19/2025*
   - Configure Instagram Graph API to fetch mentions.
   - Verify shares by checking for store mentions or product links.
 

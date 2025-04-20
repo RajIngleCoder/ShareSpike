@@ -1,11 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase client configuration
-const supabaseUrl = 'https://alowmqnremcfhribnaae.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsb3dtcW5yZW1jZmhyaWJuYWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM3NDcwNzksImV4cCI6MjA1OTMyMzA3OX0.40kJ15cZ1j7Dqwy-PG0ufEfNvx-6DEaPJd6KnTzY19E';
+// Supabase client configuration from environment variables
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Use Service Role Key for server-side
 
-// Create Supabase client instance
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Validate environment variables
+if (!supabaseUrl || !supabaseKey) {
+  console.error("Missing Supabase URL or Service Role Key environment variables.");
+  // Depending on the context, you might want to throw an error here
+  // throw new Error("Missing Supabase credentials in environment variables.");
+}
+
+// Create Supabase client instance using Service Role Key for server-side operations
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper functions for common Supabase operations
 
@@ -109,4 +116,4 @@ export async function getAnalyticsSummary(shopId) {
 
   if (error) throw error;
   return data;
-} 
+}

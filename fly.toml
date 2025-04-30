@@ -8,6 +8,7 @@ primary_region = 'bom'
 
 [env ]
 PORT = '3000'
+HOST = '0.0.0.0'
 SHOPIFY_APP_URL = 'https://sharespike.fly.dev/'
 SHOPIFY_API_KEY = 'd3974da956e097f931aa11d357cadfba'
 SCOPES = 'write_products'

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { useFetcher } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import {
   Page,
   Layout,
@@ -14,11 +15,58 @@ import {
 } from "@shopify/polaris";
 import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
+import { supabase } from "../supabase.server";
 
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
+  const { session } = await authenticate.admin(request);
+  const shop = session.shop;
 
-  return null;
+  console.log(`[App Index Loader] Authenticated shop: ${shop}`);
+
+  let settings = null;
+  let error = null;
+
+  try {
+    console.log(`[App Index Loader] Checking for existing settings for shop: ${shop}`);
+    const { data: existingSettings, error: fetchError } = await supabase
+      .from("app_settings")
+      .select("*")
+      .eq("shop_id", shop)
+      .maybeSingle();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      throw fetchError;
+    }
+
+    if (existingSettings) {
+      console.log(`[App Index Loader] Found existing settings for shop: ${shop}`);
+      settings = existingSettings;
+    } else {
+      console.log(`[App Index Loader] No settings found for ${shop}. Creating defaults.`);
+      const defaultSettings = {
+        shop_id: shop,
+        created_at: new Date().toISOString(), 
+      };
+
+      const { data: newSettings, error: insertError } = await supabase
+        .from("app_settings")
+        .insert(defaultSettings)
+        .select()
+        .single();
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      console.log(`[App Index Loader] Successfully created default settings for shop: ${shop}`);
+      settings = newSettings;
+    }
+  } catch (e) {
+    console.error(`[App Index Loader] Error fetching or creating settings for ${shop}:`, e);
+    error = e.message;
+  }
+
+  return json({ settings, error });
 };
 
 export const action = async ({ request }) => {
@@ -87,6 +135,7 @@ export const action = async ({ request }) => {
 };
 
 export default function Index() {
+  const { settings, error: loaderError } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const isLoading =
@@ -103,6 +152,43 @@ export default function Index() {
     }
   }, [productId, shopify]);
   const generateProduct = () => fetcher.submit({}, { method: "POST" });
+
+  if (loaderError) {
+    return (
+      <Page>
+        <TitleBar title="Error" />
+        <Layout>
+          <Layout.Section>
+            <Card>
+              <BlockStack gap="200">
+                <Text as="h2" variant="headingMd">
+                  Error Loading App Settings
+                </Text>
+                <Text color="critical">{loaderError}</Text>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+        </Layout>
+      </Page>
+    );
+  }
+  
+  if (!settings) {
+     return (
+      <Page>
+        <TitleBar title="Loading Settings..." />
+         <Layout>
+           <Layout.Section>
+            <Card>
+              <BlockStack gap="200">
+                 <Text as="p">Loading settings...</Text>
+              </BlockStack>
+             </Card>
+           </Layout.Section>
+         </Layout>
+       </Page>
+     );
+  }
 
   return (
     <Page>
@@ -307,7 +393,7 @@ export default function Index() {
                       to get started
                     </List.Item>
                     <List.Item>
-                      Explore Shopify’s API with{" "}
+                      Explore Shopify's API with{" "}
                       <Link
                         url="https://shopify.dev/docs/apps/tools/graphiql-admin-api"
                         target="_blank"

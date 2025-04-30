@@ -255,30 +255,52 @@ export default function SettingsPage() {
   useEffect(() => {
     setIsConnected(initialIsConnected);
 
-    const connectedParam = searchParams.get("instagram_connected");
-    const connectError = searchParams.get("instagram_error");
+    // Check for our Instagram callback parameters (ig_success, ig_error)
+    const igSuccess = searchParams.get("ig_success");
+    const igError = searchParams.get("ig_error");
+    const igErrorDesc = searchParams.get("desc");
     const disconnectedParam = searchParams.get("instagram_disconnected");
     const disconnectError = searchParams.get("instagram_disconnect_error");
 
     let bannerMsg = null;
     let bannerStat = null;
 
-    if (connectedParam === "true") {
-      bannerMsg = "Successfully connected to Instagram!"; bannerStat = "success"; setIsConnected(true);
-    } else if (connectError) {
-      bannerMsg = `Failed to connect to Instagram: ${decodeURIComponent(connectError)}`; bannerStat = "critical";
+    if (igSuccess === "true") {
+      bannerMsg = "Successfully connected to Instagram!"; 
+      bannerStat = "success"; 
+      setIsConnected(true);
+    } else if (igError) {
+      let errorMessage = "Failed to connect to Instagram";
+      if (igError === "missing_code") {
+        errorMessage = "Instagram connection failed: Missing authorization code";
+      } else if (igError === "callback_failed") {
+        errorMessage = "Instagram connection failed: Error processing the authorization";
+      } else if (igError === "shop_not_found_in_db") {
+        errorMessage = "Instagram connection failed: Your shop configuration was not found";
+      } else if (igError === "insta_auth_failed" && igErrorDesc) {
+        errorMessage = `Instagram connection failed: ${decodeURIComponent(igErrorDesc)}`;
+      }
+      bannerMsg = errorMessage; 
+      bannerStat = "critical";
     } else if (disconnectedParam === "true") {
-      bannerMsg = "Successfully disconnected from Instagram."; bannerStat = "info"; setIsConnected(false);
+      bannerMsg = "Successfully disconnected from Instagram."; 
+      bannerStat = "info"; 
+      setIsConnected(false);
     } else if (disconnectError) {
-      bannerMsg = `Failed to disconnect from Instagram: ${decodeURIComponent(disconnectError)}`; bannerStat = "critical";
+      bannerMsg = `Failed to disconnect from Instagram: ${decodeURIComponent(disconnectError)}`; 
+      bannerStat = "critical";
     }
 
     if (bannerMsg) {
       setBannerContent(bannerMsg);
       setBannerStatus(bannerStat);
+      // Clean up URL parameters
       const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.delete("instagram_connected"); newSearchParams.delete("instagram_error");
-      newSearchParams.delete("instagram_disconnected"); newSearchParams.delete("instagram_disconnect_error");
+      newSearchParams.delete("ig_success"); 
+      newSearchParams.delete("ig_error");
+      newSearchParams.delete("desc");
+      newSearchParams.delete("instagram_disconnected"); 
+      newSearchParams.delete("instagram_disconnect_error");
       navigate(`/app/settings?${newSearchParams.toString()}`, { replace: true, preventScrollReset: true });
     }
   }, [searchParams, navigate, initialIsConnected]);

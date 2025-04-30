@@ -7,6 +7,15 @@ import {
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
 
+// Define cookie options for session storage
+const sessionCookieOptions = {
+  sameSite: 'None', // Required for cross-site requests (OAuth redirects)
+  secure: true,     // Required for SameSite=None
+  httpOnly: true,   // Prevent client-side script access
+  path: '/',        // Cookie applies to all paths
+  // Optional: Define maxAge or expires if needed
+};
+
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
   apiSecretKey: process.env.SHOPIFY_API_SECRET || "",
@@ -14,7 +23,8 @@ const shopify = shopifyApp({
   scopes: process.env.SCOPES?.split(","),
   appUrl: process.env.SHOPIFY_APP_URL || "",
   authPathPrefix: "/auth",
-  sessionStorage: new PrismaSessionStorage(prisma),
+  // Pass cookie options to PrismaSessionStorage
+  sessionStorage: new PrismaSessionStorage(prisma, { cookie: sessionCookieOptions }),
   distribution: AppDistribution.AppStore,
   future: {
     unstable_newEmbeddedAuthStrategy: true,

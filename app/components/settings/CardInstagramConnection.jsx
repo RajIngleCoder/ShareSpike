@@ -21,7 +21,7 @@ function CardInstagramConnection({ shop, isConnected, onConnect }) {
           <Button
             primary
             onClick={() => {
-              // Add state parameter using the shop prop
+              // Restore the original hardcoded Instagram URL that opens in a new tab
               const instagramAuthUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1389247025830519&redirect_uri=https://sharespike.fly.dev/api/auth/instagram/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights&state=${encodeURIComponent(shop)}`;
               window.open(instagramAuthUrl, '_blank', 'noopener,noreferrer');
             }}

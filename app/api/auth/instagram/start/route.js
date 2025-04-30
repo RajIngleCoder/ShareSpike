@@ -20,3 +20,4 @@ export async function GET(request) {
   // Redirect the user to Instagram's authorization page
   return NextResponse.redirect(authUrl);
 }
+ 

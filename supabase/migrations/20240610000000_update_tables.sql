@@ -54,21 +54,21 @@ ALTER TABLE discount_codes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Store owners can manage their own Instagram connections"
     ON store_instagram_connections
     FOR ALL
-    USING (shop_id = auth.uid()::text);
+    USING (shop_id = (auth.jwt()->>'shop'));
 
 -- Policy for share_verifications
 CREATE POLICY "Store owners can view their store's verifications"
     ON share_verifications
     FOR SELECT
-    USING (shop_id = auth.uid()::text);
+    USING (shop_id = (auth.jwt()->>'shop'));
 
 CREATE POLICY "Store owners can insert verifications"
     ON share_verifications
     FOR INSERT
-    WITH CHECK (shop_id = auth.uid()::text);
+    WITH CHECK (shop_id = (auth.jwt()->>'shop'));
 
 -- Policy for discount_codes
 CREATE POLICY "Store owners can manage their discount codes"
     ON discount_codes
     FOR ALL
-    USING (shop_id = auth.uid()::text); 
+    USING (shop_id = (auth.jwt()->>'shop'));

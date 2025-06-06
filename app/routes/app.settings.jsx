@@ -12,6 +12,7 @@ import { useState, useCallback, useEffect } from "react";
 import { authenticate } from "../shopify.server";
 import { getAppSettings, saveAppSettings, storeDiscountCode } from "../supabase.server";
 import { createClient } from '@supabase/supabase-js';
+import { verifyInstagramShare } from "../services/instagram.server";
 
 // Import the components
 import CardInstagramConnection from "../components/settings/CardInstagramConnection";
@@ -207,6 +208,33 @@ export const action = async ({ request }) => {
     } catch (error) {
       console.error("Error creating discount code:", error);
       return json({ success: false, error: error.message }, { status: 500 });
+    }
+
+  } else if (actionType === "verifyShare") {
+    const postUrl = formData.get("postUrl")?.toString();
+    const customerEmail = formData.get("customerEmail")?.toString();
+
+    if (!postUrl || !customerEmail) {
+      return json({ success: false, error: "Missing Post URL or Customer Email." }, { status: 400 });
+    }
+
+    try {
+      console.log(`[Action - verifyShare] Verifying for shop ${shop}: URL=${postUrl}, Email=${customerEmail}`);
+      // Call the function from instagram.server.js
+      const verificationResult = await verifyInstagramShare(shop, postUrl, customerEmail);
+      console.log(`[Action - verifyShare] Result:`, verificationResult);
+
+      // Return the result from verifyInstagramShare directly
+      // It already includes success, message, verified, and share details
+      return json(verificationResult);
+
+    } catch (error) {
+      console.error("[Action - verifyShare] Error:", error);
+      return json({ 
+        success: false, 
+        verified: false,
+        error: error.message || "An unexpected error occurred during verification."
+      }, { status: 500 });
     }
 
   } else if (actionType === "disconnectInstagram") {

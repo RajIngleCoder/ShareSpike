@@ -10,10 +10,12 @@ const supabase = createClient(
 // Instagram API credentials from environment variables
 const INSTAGRAM_APP_ID = process.env.INSTAGRAM_APP_ID;
 const INSTAGRAM_APP_SECRET = process.env.INSTAGRAM_APP_SECRET;
+const FACEBOOK_CLIENT_TOKEN = process.env.FACEBOOK_CLIENT_TOKEN;
+const FACEBOOK_API_VERSION = process.env.FACEBOOK_API_VERSION || 'v19.0';
 
 // Validate that environment variables are set
-if (!INSTAGRAM_APP_ID || !INSTAGRAM_APP_SECRET) {
-  console.error("Missing INSTAGRAM_APP_ID or INSTAGRAM_APP_SECRET environment variables.");
+if (!INSTAGRAM_APP_ID || !INSTAGRAM_APP_SECRET || !FACEBOOK_CLIENT_TOKEN) {
+  console.error("Missing INSTAGRAM_APP_ID, INSTAGRAM_APP_SECRET, or FACEBOOK_CLIENT_TOKEN environment variables.");
   // Depending on the context, you might want to throw an error here
   // throw new Error("Missing Instagram App credentials in environment variables.");
 }
@@ -37,155 +39,97 @@ async function checkRateLimit() {
   }
 }
 
-// Function to verify an Instagram share
-export async function verifyInstagramShare(shopId, postUrl, customerEmail) {
+// Updated Function to extract Instagram post ID from URL
+export function getInstagramPostId(url) {
   try {
-    // 1. Fetch Instagram credentials
-    const { data: connection, error: connectionError } = await supabase
-      .from('store_instagram_connections')
-      .select('access_token, instagram_user_id')
-      .eq('shop_id', shopId)
-      .single();
-
-    if (connectionError || !connection) {
-      throw new Error('Instagram connection not found for this shop.');
-    }
-
-    const { access_token, instagram_user_id } = connection;
-
-    // 2. Extract media ID from post URL
-    const mediaId = extractPostId(postUrl);
-    if (!mediaId) {
-      throw new Error("Invalid Instagram post URL format.");
-    }
-
-    // 3. Call Instagram Graph API
-    const apiUrl = `https://graph.instagram.com/${mediaId}?fields=caption,tags&access_token=${access_token}`;
-
-    let apiResponse;
-    try {
-      apiResponse = await fetch(apiUrl);
-      if (!apiResponse.ok) {
-        throw new Error(`Instagram API error: ${apiResponse.status} ${apiResponse.statusText}`);
-      }
-    } catch (apiError) {
-      console.error("Error calling Instagram API:", apiError);
-      throw new Error("Failed to fetch Instagram post details.");
-    }
-
-    const apiData = await apiResponse.json();
-
-    // 4. Verify share based on API response
-    let isVerified = false;
-    let verificationMessage = "Share could not be verified.";
-
-    // Check if caption mentions the shop's handle
-    const shopHandle = shopId.split('.')[0]; // Extract handle from shop domain (e.g., mystore from mystore.myshopify.com)
-    const handleMentionRegex = new RegExp(`@${shopHandle}`, 'i'); // Case-insensitive match
-    if (apiData.caption && handleMentionRegex.test(apiData.caption)) {
-      isVerified = true;
-      verificationMessage = "Share verified: Shop handle mentioned in caption.";
-    }
-
-    // TODO: Add logic to check for tagged users (requires different API call and permissions)
-
-    // 5. Store verification result in database
-    // First check if a record already exists
-    const { data: existingShare, error: queryError } = await supabase
-      .from('share_verifications')  // Using share_verifications as shown in screenshot
-      .select('*')
-      .eq('shop_id', shopId)
-      .eq('instagram_post_url', postUrl)
-      .eq('customer_identifier', customerEmail)
-      .maybeSingle();  // Use maybeSingle instead of single to handle no records found
-
-    if (queryError) {
-      console.error("Error querying existing share:", queryError);
-      throw new Error("Failed to query share verification status.");
-    }
-
-    let share;
-    
-    if (existingShare) {
-      // Update existing record
-      const { data: updatedShare, error: updateError } = await supabase
-        .from('share_verifications')  // Using share_verifications as shown in screenshot
-        .update({
-          instagram_media_id: mediaId,
-          instagram_user_id: instagram_user_id,
-          verification_status: isVerified ? 'verified' : 'rejected',
-          verified_at: isVerified ? new Date().toISOString() : null,
-          rejection_reason: isVerified ? null : verificationMessage,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existingShare.id)
-        .select()
-        .single();
-
-      if (updateError) {
-        console.error("Error updating share:", updateError);
-        throw new Error("Failed to update share verification status.");
-      }
-
-      share = updatedShare;
-    } else {
-      // Insert new record
-      const { data: newShare, error: insertError } = await supabase
-        .from('share_verifications')  // Using share_verifications as shown in screenshot
-        .insert({
-          shop_id: shopId,
-          instagram_post_url: postUrl,
-          instagram_media_id: mediaId,
-          instagram_user_id: instagram_user_id,
-          customer_identifier: customerEmail,
-          verification_status: isVerified ? 'verified' : 'rejected',
-          verified_at: isVerified ? new Date().toISOString() : null,
-          rejection_reason: isVerified ? null : verificationMessage,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error("Error inserting share:", insertError);
-        throw new Error("Failed to create share verification record.");
-      }
-
-      share = newShare;
-    }
-
-    const verificationResult = {
-      success: true,
-      message: verificationMessage,
-      verified: isVerified,
-      share: share,
-    };
-
-    return verificationResult;
-
+    const urlObj = new URL(url);
+    // Match /p/SHORTCODE/ or /reel/SHORTCODE/
+    const match = urlObj.pathname.match(/\/(?:p|reel)\/([^/]+)/);
+    return match ? match[1] : null;
   } catch (error) {
-    console.error('Error verifying Instagram share:', error);
-    return {
-      success: false,
-      message: error.message || "Failed to verify Instagram share",
-      verified: false,
-    };
+    console.error("Error parsing URL to get Instagram post ID:", error);
+    return null;
   }
 }
 
-// Function to extract post ID from URL
-function extractPostId(url) {
+// Function to get Instagram post details from Graph API
+export async function getInstagramPostDetails(postId, accessToken) {
+  if (!checkRateLimit()) {
+    return { success: false, error: "Instagram API rate limit exceeded. Please try again later." };
+  }
+  const instagramApiUrl = `https://graph.instagram.com/${postId}?fields=caption,permalink&access_token=${accessToken}`;
   try {
-    const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/');
-    const postIndex = pathParts.findIndex(part => part === 'p');
-    if (postIndex !== -1 && pathParts[postIndex + 1]) {
-      return pathParts[postIndex + 1];
+    const instagramResponse = await fetch(instagramApiUrl);
+    const instagramData = await instagramResponse.json();
+
+    if (instagramData.error) {
+        console.error("[Instagram Service] Instagram API Error fetching post details:", instagramData.error);
+        return { success: false, error: instagramData.error.message || "Failed to fetch Instagram post details." };
     }
-    return null;
+    return { success: true, data: instagramData };
   } catch (error) {
-    return null;
+    console.error("[Instagram Service] Exception fetching Instagram post details:", error);
+    return { success: false, error: error.message || "An unexpected error occurred while fetching Instagram post details." };
+  }
+}
+
+// Function to verify an Instagram share
+export async function verifyInstagramShare(shopId, postUrl, instagramData, appSettings) {
+  const { caption, permalink } = instagramData;
+  const { required_instagram_mention, eligible_product_ids } = appSettings;
+  let verified = false;
+  let rejectionReason = null;
+  const instagramMediaId = getInstagramPostId(postUrl); // Get media ID from the URL
+
+  // Check if the caption contains the required mention
+  if (required_instagram_mention && (!caption || !caption.includes(required_instagram_mention))) {
+    rejectionReason = `Post caption must contain "${required_instagram_mention}".`;
+  } else {
+    // For now, only checking for required mention. Product link verification can be added here.
+    // Assuming if required_instagram_mention is not set, or it is included, then it's verified.
+    verified = true;
+  }
+
+  // Prepare data for Supabase insertion
+  const shareData = {
+    shop_id: shopId,
+    post_id: instagramMediaId,
+    post_url: permalink,
+    verified_at: verified ? new Date().toISOString() : null,
+    status: verified ? 'verified' : 'rejected',
+    rejection_reason: rejectionReason,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from('instagram_shares')
+      .upsert(shareData, { onConflict: 'shop_id,post_id' }); // Assuming unique constraint
+
+    if (error) {
+      console.error("[Instagram Service] Supabase error saving share verification:", error);
+      return {
+        success: false,
+        message: "Failed to save share verification to database.",
+        verified: false,
+        share: shareData,
+      };
+    }
+    return {
+      success: true,
+      message: verified ? "Share verified successfully." : rejectionReason,
+      verified: verified,
+      share: data ? data[0] : shareData, // Return the saved data or prepared data
+    };
+  } catch (error) {
+    console.error("[Instagram Service] Exception saving share verification:", error);
+    return {
+      success: false,
+      message: error.message || "An unexpected error occurred during share verification.",
+      verified: false,
+      share: shareData,
+    };
   }
 }
 

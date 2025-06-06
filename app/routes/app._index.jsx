@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import {
@@ -15,7 +15,9 @@ import {
 } from "@shopify/polaris";
 import { TitleBar, useAppBridge } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
+import { getAnalyticsSummary } from "../supabase.server";
 import { supabase } from "../supabase.server";
+import InstagramIcon from '../../instagram.png'; // Adjust path if needed
 
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
@@ -25,6 +27,28 @@ export const loader = async ({ request }) => {
 
   let settings = null;
   let error = null;
+
+  // Check Instagram connection
+  let isInstagramConnected = false;
+  let analytics = null;
+  try {
+    console.log(`[App Index Loader] Checking for existing Instagram connection for shop: ${shop}`);
+    const { data: connection } = await supabase
+      .from("store_instagram_connections")
+      .select("instagram_user_id")
+      .eq("shop_id", shop)
+      .maybeSingle();
+    isInstagramConnected = !!connection?.instagram_user_id;
+    if (isInstagramConnected) {
+      console.log(`[App Index Loader] Found existing Instagram connection for shop: ${shop}`);
+      analytics = await getAnalyticsSummary(shop);
+    } else {
+      console.log(`[App Index Loader] No Instagram connection found for ${shop}.`);
+    }
+  } catch (e) {
+    console.error(`[App Index Loader] Error checking Instagram connection for ${shop}:`, e);
+    // fallback: not connected, no analytics
+  }
 
   try {
     console.log(`[App Index Loader] Checking for existing settings for shop: ${shop}`);
@@ -66,7 +90,7 @@ export const loader = async ({ request }) => {
     error = e.message;
   }
 
-  return json({ settings, error });
+  return json({ settings, error, isInstagramConnected, analytics, shop });
 };
 
 export const action = async ({ request }) => {
@@ -135,7 +159,7 @@ export const action = async ({ request }) => {
 };
 
 export default function Index() {
-  const { settings, error: loaderError } = useLoaderData();
+  const { settings, error: loaderError, isInstagramConnected, analytics, shop } = useLoaderData();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
   const isLoading =
@@ -145,25 +169,51 @@ export default function Index() {
     "gid://shopify/Product/",
     "",
   );
+  const [connecting, setConnecting] = useState(false);
+  const cardRef = useRef(null);
+  const parentRef = useRef(null);
 
   useEffect(() => {
     if (productId) {
       shopify.toast.show("Product created");
     }
   }, [productId, shopify]);
+
+  useEffect(() => {
+    if (cardRef.current) {
+      console.log("Card computed width:", getComputedStyle(cardRef.current).width);
+      console.log("Card computed maxWidth:", getComputedStyle(cardRef.current).maxWidth);
+    }
+    if (parentRef.current) {
+      console.log("Parent computed width:", getComputedStyle(parentRef.current).width);
+      console.log("Parent computed maxWidth:", getComputedStyle(parentRef.current).maxWidth);
+    }
+    if (typeof window !== 'undefined') {
+      console.log("Window width:", window.innerWidth);
+    }
+  }, []);
+
   const generateProduct = () => fetcher.submit({}, { method: "POST" });
 
+  // Handler for connect button
+  const handleConnectInstagram = useCallback(() => {
+    setConnecting(true);
+    const instagramAuthUrl = `https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1389247025830519&redirect_uri=https://sharespike.fly.dev/api/auth/instagram/callback&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights&state=${encodeURIComponent(shop)}`;
+    window.open(instagramAuthUrl, '_blank', 'noopener,noreferrer');
+    setTimeout(() => setConnecting(false), 2000);
+  }, [shop]);
+
   if (loaderError) {
-    return (
-      <Page>
+  return (
+    <Page>
         <TitleBar title="Error" />
         <Layout>
           <Layout.Section>
             <Card>
-              <BlockStack gap="200">
-                <Text as="h2" variant="headingMd">
+                <BlockStack gap="200">
+                  <Text as="h2" variant="headingMd">
                   Error Loading App Settings
-                </Text>
+                  </Text>
                 <Text color="critical">{loaderError}</Text>
               </BlockStack>
             </Card>
@@ -179,11 +229,11 @@ export default function Index() {
         <TitleBar title="Loading Settings..." />
          <Layout>
            <Layout.Section>
-            <Card>
-              <BlockStack gap="200">
+              <Card>
+                <BlockStack gap="200">
                  <Text as="p">Loading settings...</Text>
-              </BlockStack>
-             </Card>
+                </BlockStack>
+              </Card>
            </Layout.Section>
          </Layout>
        </Page>
@@ -191,224 +241,87 @@ export default function Index() {
   }
 
   return (
-    <Page>
-      <TitleBar title="Remix app template">
-        <button variant="primary" onClick={generateProduct}>
-          Generate a product
-        </button>
-      </TitleBar>
-      <BlockStack gap="500">
-        <Layout>
-          <Layout.Section>
-            <Card>
-              <BlockStack gap="500">
-                <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
-                    Congrats on creating a new Shopify app 🎉
+    <>
+      <style>{`
+        .instagram-connect-btn {
+          background: #000 !important;
+          color: #fff !important;
+          border: none !important;
+          font-weight: 600;
+          font-size: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding-top: 12px !important;
+          padding-bottom: 12px !important;
+        }
+        .instagram-connect-btn:active, .instagram-connect-btn:focus {
+          background: #222 !important;
+        }
+        .wide-polaris-card {
+          max-width: 600px !important;
+          width: 100% !important;
+        }
+      `}</style>
+      <Page title="Welcome to ShareSpike">
+        <div ref={parentRef} style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {!isInstagramConnected ? (
+            <div style={{ width: 520, maxWidth: '90vw' }}>
+              <Card ref={cardRef} sectioned className="wide-polaris-card" style={{ width: '100%', textAlign: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+                  <img src={InstagramIcon} alt="Instagram" style={{ width: 64, height: 64, borderRadius: 16, objectFit: 'contain', background: '#fff' }} />
+                  <Text as="h2" variant="headingMd" fontWeight="bold" style={{ textAlign: 'center' }}>ShareSpike</Text>
+                  <Text as="p" variant="bodyMd" tone="subdued" style={{ textAlign: 'center' }}>
+                    Connect your Instagram account to start using ShareSpike.
                   </Text>
-                  <Text variant="bodyMd" as="p">
-                    This embedded app template uses{" "}
-                    <Link
-                      url="https://shopify.dev/docs/apps/tools/app-bridge"
-                      target="_blank"
-                      removeUnderline
-                    >
-                      App Bridge
-                    </Link>{" "}
-                    interface examples like an{" "}
-                    <Link url="/app/additional" removeUnderline>
-                      additional page in the app nav
-                    </Link>
-                    , as well as an{" "}
-                    <Link
-                      url="https://shopify.dev/docs/api/admin-graphql"
-                      target="_blank"
-                      removeUnderline
-                    >
-                      Admin GraphQL
-                    </Link>{" "}
-                    mutation demo, to provide a starting point for app
-                    development.
-                  </Text>
-                </BlockStack>
-                <BlockStack gap="200">
-                  <Text as="h3" variant="headingMd">
-                    Get started with products
-                  </Text>
-                  <Text as="p" variant="bodyMd">
-                    Generate a product with GraphQL and get the JSON output for
-                    that product. Learn more about the{" "}
-                    <Link
-                      url="https://shopify.dev/docs/api/admin-graphql/latest/mutations/productCreate"
-                      target="_blank"
-                      removeUnderline
-                    >
-                      productCreate
-                    </Link>{" "}
-                    mutation in our API references.
-                  </Text>
-                </BlockStack>
-                <InlineStack gap="300">
-                  <Button loading={isLoading} onClick={generateProduct}>
-                    Generate a product
+                  <Button
+                    fullWidth
+                    size="large"
+                    loading={connecting}
+                    onClick={handleConnectInstagram}
+                    icon={<img src={InstagramIcon} alt="Instagram" style={{ width: 20, height: 20, marginRight: 8, verticalAlign: 'middle' }} />}
+                    className="instagram-connect-btn"
+                  >
+                    Connect with Instagram
                   </Button>
-                  {fetcher.data?.product && (
-                    <Button
-                      url={`shopify:admin/products/${productId}`}
-                      target="_blank"
-                      variant="plain"
-                    >
-                      View product
-                    </Button>
-                  )}
-                </InlineStack>
-                {fetcher.data?.product && (
-                  <>
-                    <Text as="h3" variant="headingMd">
-                      {" "}
-                      productCreate mutation
-                    </Text>
-                    <Box
-                      padding="400"
-                      background="bg-surface-active"
-                      borderWidth="025"
-                      borderRadius="200"
-                      borderColor="border"
-                      overflowX="scroll"
-                    >
-                      <pre style={{ margin: 0 }}>
-                        <code>
-                          {JSON.stringify(fetcher.data.product, null, 2)}
-                        </code>
-                      </pre>
-                    </Box>
-                    <Text as="h3" variant="headingMd">
-                      {" "}
-                      productVariantsBulkUpdate mutation
-                    </Text>
-                    <Box
-                      padding="400"
-                      background="bg-surface-active"
-                      borderWidth="025"
-                      borderRadius="200"
-                      borderColor="border"
-                      overflowX="scroll"
-                    >
-                      <pre style={{ margin: 0 }}>
-                        <code>
-                          {JSON.stringify(fetcher.data.variant, null, 2)}
-                        </code>
-                      </pre>
-                    </Box>
-                  </>
-                )}
+                </div>
+              </Card>
+            </div>
+          ) : (
+            <Card sectioned>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingMd">Analytics Overview</Text>
+                <Layout>
+                  <Layout.Section>
+                    <Card title="Shares" sectioned>
+                      <Text as="h3" variant="headingLg">{(analytics || []).reduce((sum, a) => sum + (a.share_count || 0), 0)}</Text>
+                      <Text variant="bodySm">Total Shares</Text>
+                    </Card>
+                  </Layout.Section>
+                  <Layout.Section>
+                    <Card title="Discounts Issued" sectioned>
+                      <Text as="h3" variant="headingLg">{(analytics || []).reduce((sum, a) => sum + (a.discount_count || 0), 0)}</Text>
+                      <Text variant="bodySm">Discount Codes</Text>
+                    </Card>
+                  </Layout.Section>
+                  <Layout.Section>
+                    <Card title="Conversions" sectioned>
+                      <Text as="h3" variant="headingLg">{(analytics || []).reduce((sum, a) => sum + (a.conversion_count || 0), 0)}</Text>
+                      <Text variant="bodySm">Sales from Shares</Text>
+                    </Card>
+                  </Layout.Section>
+                  <Layout.Section>
+                    <Card title="Revenue Generated" sectioned>
+                      <Text as="h3" variant="headingLg">${(analytics || []).reduce((sum, a) => sum + (parseFloat(a.revenue_generated) || 0), 0).toFixed(2)}</Text>
+                      <Text variant="bodySm">Total Revenue</Text>
+                    </Card>
+                  </Layout.Section>
+                </Layout>
               </BlockStack>
             </Card>
-          </Layout.Section>
-          <Layout.Section variant="oneThird">
-            <BlockStack gap="500">
-              <Card>
-                <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
-                    App template specs
-                  </Text>
-                  <BlockStack gap="200">
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Framework
-                      </Text>
-                      <Link
-                        url="https://remix.run"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        Remix
-                      </Link>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Database
-                      </Text>
-                      <Link
-                        url="https://www.prisma.io/"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        Prisma
-                      </Link>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Interface
-                      </Text>
-                      <span>
-                        <Link
-                          url="https://polaris.shopify.com"
-                          target="_blank"
-                          removeUnderline
-                        >
-                          Polaris
-                        </Link>
-                        {", "}
-                        <Link
-                          url="https://shopify.dev/docs/apps/tools/app-bridge"
-                          target="_blank"
-                          removeUnderline
-                        >
-                          App Bridge
-                        </Link>
-                      </span>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        API
-                      </Text>
-                      <Link
-                        url="https://shopify.dev/docs/api/admin-graphql"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        GraphQL API
-                      </Link>
-                    </InlineStack>
-                  </BlockStack>
-                </BlockStack>
-              </Card>
-              <Card>
-                <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
-                    Next steps
-                  </Text>
-                  <List>
-                    <List.Item>
-                      Build an{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/getting-started/build-app-example"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        {" "}
-                        example app
-                      </Link>{" "}
-                      to get started
-                    </List.Item>
-                    <List.Item>
-                      Explore Shopify's API with{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/tools/graphiql-admin-api"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        GraphiQL
-                      </Link>
-                    </List.Item>
-                  </List>
-                </BlockStack>
-              </Card>
-            </BlockStack>
-          </Layout.Section>
-        </Layout>
-      </BlockStack>
+          )}
+        </div>
     </Page>
+    </>
   );
 }

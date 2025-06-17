@@ -26,9 +26,9 @@ export async function action({ request }) {
       throw new Response("Authentication failed", { status: 401 });
     }
 
-    const { instagramUrl } = body; // Removed customerEmail from destructuring
-    if (!instagramUrl) {
-      return json({ error: "Missing instagramUrl." }, { status: 400 });
+    const { instagramUrl, customerEmail } = body; // Also get customerEmail from body
+    if (!instagramUrl || !customerEmail) {
+      return json({ error: "Missing instagramUrl or customerEmail." }, { status: 400 });
     }
 
     const postId = getInstagramPostId(instagramUrl);
@@ -82,7 +82,7 @@ export async function action({ request }) {
     console.log("[Verify Share Action] Instagram Post Data:", instagramData);
 
     // Call the new service function to verify the Instagram share
-    const verificationResult = await verifyInstagramShare(shop, instagramUrl, instagramData, appSettings); // Removed customerEmail from arguments
+    const verificationResult = await verifyInstagramShare(shop, instagramUrl, customerEmail, instagramData, appSettings);
 
     if (!verificationResult.success) {
       console.error("[Verify Share Action] Instagram share verification failed:", verificationResult.message);

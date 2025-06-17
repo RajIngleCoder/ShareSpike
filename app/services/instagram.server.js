@@ -74,7 +74,7 @@ export async function getInstagramPostDetails(postId, accessToken) {
 }
 
 // Function to verify an Instagram share
-export async function verifyInstagramShare(shopId, postUrl, instagramData, appSettings) {
+export async function verifyInstagramShare(shopId, postUrl, customerEmail, instagramData, appSettings) {
   const { caption, permalink } = instagramData;
   const { required_instagram_mention, eligible_product_ids } = appSettings;
   let verified = false;
@@ -95,6 +95,7 @@ export async function verifyInstagramShare(shopId, postUrl, instagramData, appSe
     shop_id: shopId,
     post_id: instagramMediaId,
     post_url: permalink,
+    customer_email: customerEmail,
     verified_at: verified ? new Date().toISOString() : null,
     status: verified ? 'verified' : 'rejected',
     rejection_reason: rejectionReason,
@@ -105,7 +106,7 @@ export async function verifyInstagramShare(shopId, postUrl, instagramData, appSe
   try {
     const { data, error } = await supabase
       .from('instagram_shares')
-      .upsert(shareData, { onConflict: 'shop_id,post_id' }); // Assuming unique constraint
+      .upsert(shareData, { onConflict: 'shop_id,post_id,customer_email' }); // Assuming unique constraint
 
     if (error) {
       console.error("[Instagram Service] Supabase error saving share verification:", error);

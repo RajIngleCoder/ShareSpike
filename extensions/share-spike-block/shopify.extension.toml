@@ -5,18 +5,19 @@ api_version = "2024-04"
 
 
 [[extensions]]
-type = "ui_extension"
+type = "theme_app_extension"
 name = "Share Spike Block"
 handle = "share-spike-block"
 
   [extensions.build]
   dev_cmd = "npm run dev"
   build_cmd = "npm run build"
-  external = ["react-reconciler"]
+  # For theme app extensions, external may not be needed or may differ
+  # external = ["react-reconciler"]
 
   [extensions.capabilities]
   network_access = true
 
   [[extensions.targeting]]
-  target = "purchase.thank-you.block.render"
-  module = "./src/index.jsx"
+  target = "page"
+  module = "./blocks/share-spike-block.liquid"

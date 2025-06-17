@@ -1,0 +1,44 @@
+{% comment %}
+  A Shopify theme app extension block.
+
+  Usage:
+
+  {% render 'share-spike-block' %}
+{% endcomment %}
+
+<div id="share-spike-root-{{ block.id }}"></div>
+{% render 'vite-tag' with 'index.jsx' %}
+<script>
+  // Ensure the DOM is ready before initializing the React app
+  document.addEventListener('DOMContentLoaded', function() {
+    const rootElement = document.getElementById('share-spike-root-{{ block.id }}');
+    if (window.ShareSpikeBlock && window.ShareSpikeBlock.init) {
+      // Pass Shopify.shop if the React component needs the shop domain
+      window.ShareSpikeBlock.init(rootElement, Shopify.shop);
+    } else {
+      console.error("ShareSpikeBlock global object or init function not found.");
+    }
+  });
+</script>
+
+{% schema %}
+  {
+    "name": "Share Spike Block",
+    "target": "section",
+    "settings": [
+      {
+        "type": "text",
+        "id": "heading",
+        "label": "Heading",
+        "default": "Share & Earn Discount!"
+      },
+      {
+        "type": "richtext",
+        "id": "description",
+        "label": "Description",
+        "default": "<p>Share your favorite products on Instagram and get a discount on your next purchase!</p>"
+      }
+    ]
+
+  }
+{% endschema %}

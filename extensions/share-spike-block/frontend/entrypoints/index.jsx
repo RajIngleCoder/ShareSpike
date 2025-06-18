@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { Card, Text } from '@shopify/polaris'; // Import Polaris components
+import { AppProvider } from '@shopify/polaris'; // Import AppProvider
+import ShareVerificationForm from '../components/ShareVerificationForm.jsx'; // Import the actual form component
+import '@shopify/polaris/build/esm/styles.css'; // Import Polaris CSS
 
 console.log("ShareSpikeBlock: index.jsx loaded.");
 
@@ -17,10 +19,16 @@ window.ShareSpikeBlock = {
         reactRoot = ReactDOM.createRoot(rootElement);
         reactRoot.render(
           <React.StrictMode>
-            <Card sectioned>
-              <Text as="h2" variant="headingMd">Share Spike Block Placeholder</Text>
-              <p>If you see this, Polaris is rendering!</p>
-            </Card>
+            {/* Wrap the ShareVerificationForm with AppProvider */}
+            <AppProvider i18n={{
+              Polaris: {
+                Common: {
+                  checkbox: 'checkbox',
+                },
+              },
+            }}>
+              <ShareVerificationForm shopDomain={shopDomain} />
+            </AppProvider>
           </React.StrictMode>
         );
         console.log("ShareSpikeBlock: React app rendered.");

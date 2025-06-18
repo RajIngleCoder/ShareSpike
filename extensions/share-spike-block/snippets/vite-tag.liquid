@@ -4,5 +4,6 @@
 {% endcomment %}
 {% assign path = vite-tag | replace: '~/', '../' | replace: '@/', '../' %}
 {% if path == "/frontend/entrypoints/index.jsx" or path == "index.jsx" %}
-  <script src="{{ 'index-reP6q3mH.js' | asset_url | split: '?' | first }}" type="module" crossorigin="anonymous"></script>
+  <script src="{{ 'index-B5xzS9oF.js' | asset_url | split: '?' | first }}" type="module" crossorigin="anonymous"></script>
+  {{ 'index-C7YjYK5e.css' | asset_url | split: '?' | first | stylesheet_tag: preload: preload_stylesheet }}
 {% endif %}

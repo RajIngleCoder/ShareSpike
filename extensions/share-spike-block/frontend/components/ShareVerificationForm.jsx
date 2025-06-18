@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import {
+  Card,
   TextField,
   Button,
-  Card,
-  Text,
-  BlockStack,
-  Spinner,
   Banner,
-  View
-} from '@shopify/ui-extensions-react/customer-account'; // Changed from @shopify/polaris and then from /checkout
+  Spinner,
+  Text,
+  InlineStack // Changed from Stack to InlineStack
+} from '@shopify/polaris';
 
 function ShareVerificationForm({ shopDomain }) {
   const [instagramUrl, setInstagramUrl] = useState('');
@@ -54,8 +53,8 @@ function ShareVerificationForm({ shopDomain }) {
   };
 
   return (
-    <Card>
-      <BlockStack gap="400">
+    <Card sectioned> {/* Polaris Card often uses 'sectioned' prop for default padding */}
+      <InlineStack vertical spacing="loose"> {/* Replaced div with InlineStack */}
         <Text as="h2" variant="headingLg">Share & Earn Program</Text>
         <Text as="p" variant="bodyMd">
           Share your favorite products on Instagram and earn a discount!
@@ -80,7 +79,7 @@ function ShareVerificationForm({ shopDomain }) {
         <Button primary onClick={handleSubmit} loading={isLoading}>
           {isLoading ? <Spinner accessibilityLabel="Verifying share" size="small" /> : "Verify Share"}
         </Button>
-      </BlockStack>
+      </InlineStack>
     </Card>
   );
 }

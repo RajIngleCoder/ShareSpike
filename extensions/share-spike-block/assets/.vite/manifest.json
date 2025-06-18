@@ -1,8 +1,11 @@
 {
   "frontend/entrypoints/index.jsx": {
-    "file": "index-reP6q3mH.js",
+    "file": "index-B5xzS9oF.js",
     "name": "index",
     "src": "frontend/entrypoints/index.jsx",
-    "isEntry": true
+    "isEntry": true,
+    "css": [
+      "index-C7YjYK5e.css"
+    ]
   }
 }

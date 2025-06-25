@@ -34,7 +34,7 @@ This file tracks active development tasks, backlog items, and milestones for "Sh
   - Fetch products and allow merchants to select eligible ones.
   - Create discount codes for verified shares.
   - Build discount testing page for manual code generation.
-- [ ] **Implement Instagram Share Verification**
+- [x] **Implement Instagram Share Verification**
   - [x] Configure existing Instagram Connect button in Settings page to use `window.open` with correct OAuth URL to bypass iframe restrictions - *4/16/2025*
   - [x] Fix Instagram callback handler (`storeInstagramCredentials`) to save credentials to correct database column (`instagram_user_id`) - *4/17/2025*
   - [x] Add production Instagram callback URL to `shopify.app.toml` `auth.redirect_urls` - *4/18/2025*
